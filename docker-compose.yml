@@ -21,11 +21,12 @@ services:
     restart: always
     command: --log-dir /app/logs
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./data:/data
       - ./logs:/app/logs
     environment:
+      - BASE_URL=/api
       - SQL_DSN=postgresql://root:123456@postgres:5432/new-api # ⚠️ IMPORTANT: Change the password in production!
 #      - SQL_DSN=root:123456@tcp(mysql:3306)/new-api  # Point to the mysql service, uncomment if using MySQL
       - REDIS_CONN_STRING=redis://redis
@@ -49,6 +50,28 @@ services:
       timeout: 10s
       retries: 3
 
+      # -----------------------------------------------------
+  # 新增: Open-WebUI 服务
+  # -----------------------------------------------------
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main-slim
+    container_name: open-webui
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8080" # 同样只绑定到 localhost，更安全
+    volumes:
+      - open-webui-data:/app/backend/data
+    extra_hosts: # 等同于 docker run 的 --add-host
+      - "host.docker.internal:host-gateway"
+      # 关键步骤：在这里配置 OpenWebUI 去连接 new-api
+      # 注意：这里的 OPENAI_API_BASE_URL 只是一个示例变量名
+      # 你需要查阅 OpenWebUI 的文档，找到配置后端 API 地址的环境变量
+      # 并将它的值设置为 "http://new-api:3000/api"
+    depends_on:
+      - new-api # 让 open-webui 在 new-api 启动之后再启动
+    # networks:
+    #   - app-network
+    
   redis:
     image: redis:latest
     container_name: redis
@@ -81,4 +104,5 @@ services:
 
 volumes:
   pg_data:
+  open-webui-data: # 为 open-webui 新增的数据卷
 #  mysql_data:
