@@ -49,13 +49,39 @@
 
 ## 📝 项目说明
 
-> [!NOTE]  
+> [!NOTE]
 > 本项目为开源项目，在 [One API](https://github.com/songquanpeng/one-api) 的基础上进行二次开发
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > - 本项目仅供个人学习使用，不保证稳定性，且不提供任何技术支持
 > - 使用者必须在遵循 OpenAI 的 [使用条款](https://openai.com/policies/terms-of-use) 以及**法律法规**的情况下使用，不得用于非法用途
 > - 根据 [《生成式人工智能服务管理暂行办法》](http://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm) 的要求，请勿对中国地区公众提供一切未经备案的生成式人工智能服务
+
+### 🎯 Open-WebUI 集成特性
+
+新版 New API 现已深度集成 [Open-WebUI](https://github.com/open-webui/open-webui)，提供完整的 AI 应用解决方案：
+
+#### ✨ 集成优势
+- **开箱即用**：Docker Compose 一键部署，自动配置服务间的连接
+- **统一管理**：New API 负责后端 API 管理，Open-WebUI 提供前端对话界面
+- **多模型支持**：通过 New API 统一接口，支持 OpenAI、Claude、Gemini 等主流模型
+- **安全隔离**：服务间通过 Docker 网络安全通信，仅暴露必要端口
+
+#### 🏗️ 架构说明
+```
+用户访问
+    ↓
+Open-WebUI (localhost:8000) - 提供类 ChatGPT 界面
+    ↓
+New-API (localhost:3000) - API 网关和管理系统
+    ↓
+各种 AI 服务提供商 (OpenAI/Claude/Gemini 等)
+```
+
+#### 🚀 部署体验
+- **一体化部署**：一个命令启动完整 AI 应用栈
+- **数据持久化**：配置和对话数据自动保存
+- **灵活扩展**：可根据需求独立升级或替换组件
 
 ---
 
@@ -108,10 +134,10 @@
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# 编辑 docker-compose.yml 配置
+# 编辑 docker-compose.yml 配置（已包含 New-API 和 Open-WebUI）
 nano docker-compose.yml
 
-# 启动服务
+# 启动服务（包含 New-API 和 Open-WebUI）
 docker-compose up -d
 ```
 
@@ -144,7 +170,14 @@ docker run --name new-api -d --restart always \
 
 ---
 
-🎉 部署完成后，访问 `http://localhost:3000` 即可使用！
+🎉 部署完成后：
+- **New-API 管理界面**：访问 `http://localhost:3000` 进行 API 配置和管理
+- **Open-WebUI 聊天界面**：访问 `http://localhost:8000` 进行 AI 对话
+
+💡 **Open-WebUI 集成说明**：
+- 新版 docker-compose.yml 已集成 Open-WebUI 服务
+- Open-WebUI 会自动连接到 New-API 作为后端服务
+- 无需额外配置，开箱即用，提供类似 ChatGPT 的对话界面
 
 📖 更多部署方式请参考 [部署指南](https://docs.newapi.pro/installation)
 
@@ -320,17 +353,27 @@ docker run --name new-api -d --restart always \
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# 编辑配置
+# 编辑配置（包含 New-API 和 Open-WebUI 服务）
 nano docker-compose.yml
 
-# 启动服务
+# 启动服务（New-API + Open-WebUI + Redis + PostgreSQL）
 docker-compose up -d
 ```
+
+**服务说明：**
+- **New-API**：运行在端口 3000，提供 API 管理界面
+- **Open-WebUI**：运行在端口 8000，提供 Web 聊天界面
+- **Redis**：缓存服务
+- **PostgreSQL**：数据库服务（可选 MySQL）
+
+**访问地址：**
+- 管理界面：`http://localhost:3000`
+- 聊天界面：`http://localhost:8000`
 
 </details>
 
 <details>
-<summary><strong>方式 2：Docker 命令</strong></summary>
+<summary><strong>方式 2：仅 Docker 部署 New-API</strong></summary>
 
 **使用 SQLite：**
 ```bash
@@ -351,7 +394,9 @@ docker run --name new-api -d --restart always \
   calciumion/new-api:latest
 ```
 
-> **💡 路径说明：** 
+💡 **提示**：此方式仅部署 New-API 服务，如需 Open-WebUI 界面，请使用 Docker Compose 方式
+
+> **💡 路径说明：**
 > - `./data:/data` - 相对路径，数据保存在当前目录的 data 文件夹
 > - 也可使用绝对路径，如：`/your/custom/path:/data`
 
