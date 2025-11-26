@@ -217,6 +217,7 @@ docker run --name new-api -d --restart always \
 
 ### 🔐 Authorization and Security
 
+- 😈 Discord authorization login
 - 🤖 LinuxDO authorization login
 - 📱 Telegram authorization login
 - 🔑 OIDC unified authentication

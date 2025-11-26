@@ -13,6 +13,7 @@ import (
 	channelconstant "github.com/QuantumNous/new-api/constant"
 	"github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/relay/channel"
+	"github.com/QuantumNous/new-api/relay/channel/claude"
 	"github.com/QuantumNous/new-api/relay/channel/openai"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relay/constant"
@@ -23,8 +24,11 @@ import (
 )
 
 const (
-	contextKeyTTSRequest     = "volcengine_tts_request"
-	contextKeyResponseFormat = "response_format"
+	contextKeyTTSRequest          = "volcengine_tts_request"
+	contextKeyResponseFormat      = "response_format"
+	DoubaoCodingPlan              = "doubao-coding-plan"
+	DoubaoCodingPlanClaudeBaseURL = "https://ark.cn-beijing.volces.com/api/coding"
+	DoubaoCodingPlanOpenAIBaseURL = "https://ark.cn-beijing.volces.com/api/coding/v3"
 )
 
 type Adaptor struct {
@@ -36,6 +40,10 @@ func (a *Adaptor) ConvertGeminiRequest(*gin.Context, *relaycommon.RelayInfo, *dt
 }
 
 func (a *Adaptor) ConvertClaudeRequest(c *gin.Context, info *relaycommon.RelayInfo, req *dto.ClaudeRequest) (any, error) {
+	if info.ChannelBaseUrl == DoubaoCodingPlan {
+		adaptor := claude.Adaptor{}
+		return adaptor.ConvertClaudeRequest(c, info, req)
+	}
 	adaptor := openai.Adaptor{}
 	return adaptor.ConvertClaudeRequest(c, info, req)
 }
@@ -238,6 +246,9 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 
 	switch info.RelayFormat {
 	case types.RelayFormatClaude:
+		if baseUrl == DoubaoCodingPlan {
+			return fmt.Sprintf("%s/v1/messages", DoubaoCodingPlanClaudeBaseURL), nil
+		}
 		if strings.HasPrefix(info.UpstreamModelName, "bot") {
 			return fmt.Sprintf("%s/api/v3/bots/chat/completions", baseUrl), nil
 		}
@@ -245,6 +256,9 @@ func (a *Adaptor) GetRequestURL(info *relaycommon.RelayInfo) (string, error) {
 	default:
 		switch info.RelayMode {
 		case constant.RelayModeChatCompletions:
+			if baseUrl == DoubaoCodingPlan {
+				return fmt.Sprintf("%s/chat/completions", DoubaoCodingPlanOpenAIBaseURL), nil
+			}
 			if strings.HasPrefix(info.UpstreamModelName, "bot") {
 				return fmt.Sprintf("%s/api/v3/bots/chat/completions", baseUrl), nil
 			}
@@ -331,6 +345,13 @@ func (a *Adaptor) DoRequest(c *gin.Context, info *relaycommon.RelayInfo, request
 }
 
 func (a *Adaptor) DoResponse(c *gin.Context, resp *http.Response, info *relaycommon.RelayInfo) (usage any, err *types.NewAPIError) {
+	if info.RelayFormat == types.RelayFormatClaude && info.ChannelBaseUrl == DoubaoCodingPlan {
+		if info.IsStream {
+			return claude.ClaudeStreamHandler(c, resp, info, claude.RequestModeMessage)
+		}
+		return claude.ClaudeHandler(c, resp, info, claude.RequestModeMessage)
+	}
+
 	if info.RelayMode == constant.RelayModeAudioSpeech {
 		encoding := mapEncoding(c.GetString(contextKeyResponseFormat))
 		if info.IsStream {
