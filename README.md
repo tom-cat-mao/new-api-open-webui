@@ -134,12 +134,36 @@ New-API (localhost:3000) - API 网关和管理系统
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# 编辑 docker-compose.yml 配置（已包含 New-API 和 Open-WebUI）
+# 编辑 docker-compose.yml 配置（已包含 New-API、Open-WebUI 和 Watchtower 自动更新）
 nano docker-compose.yml
 
-# 启动服务（包含 New-API 和 Open-WebUI）
+# 启动服务（包含 New-API、Open-WebUI 和 Watchtower 自动更新）
 docker-compose up -d
+
+# 查看 Watchtower 自动更新日志
+docker logs watchtower -f
 ```
+
+#### 🔧 服务说明
+
+Docker Compose 配置包含以下服务：
+
+- **New-API**（端口 3000）：主要的 API 网关服务
+- **Open-WebUI**（端口 8000）：Web 界面服务
+- **PostgreSQL**：数据库服务
+- **Redis**：缓存服务
+- **Watchtower**：自动更新服务
+
+#### 🔄 自动更新功能（Watchtower）
+
+项目集成了 Watchtower 服务，提供以下功能：
+
+- **自动监控**：每 12 小时检查一次新镜像版本
+- **自动更新**：发现新版本时自动下载并重启容器
+- **清理旧镜像**：更新后自动清理旧版本镜像节省空间
+- **服务管理**：仅更新正在运行的容器，忽略已停止的容器
+
+如需禁用自动更新，可在 `docker-compose.yml` 中注释掉 watchtower 服务部分。
 
 <details>
 <summary><strong>使用 Docker 命令</strong></summary>
@@ -353,11 +377,14 @@ docker run --name new-api -d --restart always \
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# 编辑配置（包含 New-API 和 Open-WebUI 服务）
+# 编辑配置（包含 New-API、Open-WebUI 和 Watchtower 服务）
 nano docker-compose.yml
 
-# 启动服务（New-API + Open-WebUI + Redis + PostgreSQL）
+# 启动服务（New-API + Open-WebUI + Redis + PostgreSQL + Watchtower）
 docker-compose up -d
+
+# 监控自动更新日志
+docker logs watchtower -f
 ```
 
 **服务说明：**
@@ -365,10 +392,16 @@ docker-compose up -d
 - **Open-WebUI**：运行在端口 8000，提供 Web 聊天界面
 - **Redis**：缓存服务
 - **PostgreSQL**：数据库服务（可选 MySQL）
+- **Watchtower**：自动更新服务，每 12 小时检查并更新容器镜像
 
 **访问地址：**
 - 管理界面：`http://localhost:3000`
 - 聊天界面：`http://localhost:8000`
+
+**Watchtower 管理：**
+- 查看更新日志：`docker logs watchtower`
+- 手动触发更新：`docker-compose restart watchtower`
+- 禁用自动更新：在 `docker-compose.yml` 中注释 watchtower 服务
 
 </details>
 

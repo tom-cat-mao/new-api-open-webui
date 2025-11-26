@@ -108,12 +108,36 @@
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# docker-compose.yml 設定を編集
+# docker-compose.yml 設定を編集（New-API、Open-WebUI、Watchtower 自動更新を含む）
 nano docker-compose.yml
 
-# サービスを起動
+# サービスを起動（New-API、Open-WebUI、Watchtower 自動更新を含む）
 docker-compose up -d
+
+# Watchtower 自動更新ログを監視
+docker logs watchtower -f
 ```
+
+#### 🔧 サービス説明
+
+Docker Compose設定には以下のサービスが含まれています：
+
+- **New-API**（ポート 3000）：メインAPIゲートウェイサービス
+- **Open-WebUI**（ポート 8000）：Webインターフェースサービス
+- **PostgreSQL**：データベースサービス
+- **Redis**：キャッシュサービス
+- **Watchtower**：自動更新サービス
+
+#### 🔄 自動更新機能（Watchtower）
+
+プロジェクトはWatchtowerサービスを統合しており、以下の機能を提供します：
+
+- **自動監視**：12時間ごとに新しいイメージバージョンをチェック
+- **自動更新**：新しいバージョンが見つかった場合に自動でダウンロードしてコンテナを再起動
+- **古いイメージのクリーンアップ**：更新後に古いバージョンのイメージを自動的にクリーンアップして容量を節約
+- **サービス管理**：実行中のコンテナのみを更新し、停止中のコンテナは無視
+
+自動更新を無効にするには、`docker-compose.yml`でwatchtowerサービスセクションをコメントアウトしてください。
 
 <details>
 <summary><strong>Dockerコマンドを使用</strong></summary>
@@ -325,12 +349,31 @@ docker run --name new-api -d --restart always \
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# 設定を編集
+# 設定を編集（New-API、Open-WebUI、Watchtowerサービスを含む）
 nano docker-compose.yml
 
-# サービスを起動
+# サービスを起動（New-API + Open-WebUI + Redis + PostgreSQL + Watchtower）
 docker-compose up -d
+
+# 自動更新ログを監視
+docker logs watchtower -f
 ```
+
+**サービス説明：**
+- **New-API**：ポート3000で実行、API管理インターフェースを提供
+- **Open-WebUI**：ポート8000で実行、Webチャットインターフェースを提供
+- **Redis**：キャッシュサービス
+- **PostgreSQL**：データベースサービス（MySQLはオプション）
+- **Watchtower**：自動更新サービス、12時間ごとにコンテナイメージをチェック・更新
+
+**アクセスアドレス：**
+- 管理インターフェース：`http://localhost:3000`
+- チャットインターフェース：`http://localhost:8000`
+
+**Watchtower管理：**
+- 更新ログを表示：`docker logs watchtower`
+- 手動で更新をトリガー：`docker-compose restart watchtower`
+- 自動更新を無効化：`docker-compose.yml`でwatchtowerサービスをコメントアウト
 
 </details>
 

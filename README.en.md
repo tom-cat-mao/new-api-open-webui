@@ -108,12 +108,36 @@
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# Edit docker-compose.yml configuration
+# Edit docker-compose.yml configuration (includes New-API, Open-WebUI and Watchtower auto-update)
 nano docker-compose.yml
 
-# Start the service
+# Start services (includes New-API, Open-WebUI and Watchtower auto-update)
 docker-compose up -d
+
+# Monitor Watchtower auto-update logs
+docker logs watchtower -f
 ```
+
+#### 🔧 Service Description
+
+Docker Compose configuration includes the following services:
+
+- **New-API** (Port 3000): Main API gateway service
+- **Open-WebUI** (Port 8000): Web interface service
+- **PostgreSQL**: Database service
+- **Redis**: Cache service
+- **Watchtower**: Auto-update service
+
+#### 🔄 Auto-Update Feature (Watchtower)
+
+The project integrates Watchtower service, providing the following features:
+
+- **Automatic Monitoring**: Checks for new image versions every 12 hours
+- **Automatic Updates**: Downloads and restarts containers when new versions are found
+- **Old Image Cleanup**: Automatically cleans up old version images after updates to save space
+- **Service Management**: Only updates running containers, ignoring stopped containers
+
+To disable auto-update, comment out the watchtower service section in `docker-compose.yml`.
 
 <details>
 <summary><strong>Using Docker Commands</strong></summary>
@@ -319,12 +343,31 @@ docker run --name new-api -d --restart always \
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# Edit configuration
+# Edit configuration (includes New-API, Open-WebUI and Watchtower services)
 nano docker-compose.yml
 
-# Start service
+# Start services (New-API + Open-WebUI + Redis + PostgreSQL + Watchtower)
 docker-compose up -d
+
+# Monitor auto-update logs
+docker logs watchtower -f
 ```
+
+**Service Description:**
+- **New-API**: Runs on port 3000, provides API management interface
+- **Open-WebUI**: Runs on port 8000, provides Web chat interface
+- **Redis**: Cache service
+- **PostgreSQL**: Database service (MySQL optional)
+- **Watchtower**: Auto-update service, checks and updates container images every 12 hours
+
+**Access Addresses:**
+- Management Interface: `http://localhost:3000`
+- Chat Interface: `http://localhost:8000`
+
+**Watchtower Management:**
+- View update logs: `docker logs watchtower`
+- Manually trigger update: `docker-compose restart watchtower`
+- Disable auto-update: Comment out watchtower service in `docker-compose.yml`
 
 </details>
 

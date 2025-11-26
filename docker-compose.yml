@@ -1,16 +1,24 @@
 # New-API Docker Compose Configuration
-# 
+#
 # Quick Start:
 #   1. docker-compose up -d
-#   2. Access at http://localhost:3000
+#   2. Access New-API at http://localhost:3000
+#   3. Access Open-WebUI at http://localhost:8000
 #
 # Using MySQL instead of PostgreSQL:
-#   1. Comment out the postgres service and SQL_DSN line 15
-#   2. Uncomment the mysql service and SQL_DSN line 16
-#   3. Uncomment mysql in depends_on (line 28)
-#   4. Uncomment mysql_data in volumes section (line 64)
+#   1. Comment out the postgres service and SQL_DSN line 30
+#   2. Uncomment the mysql service and SQL_DSN line 31
+#   3. Uncomment mysql in depends_on (line 45)
+#   4. Uncomment mysql_data in volumes section (line 119)
+#
+# Auto Updates (Watchtower):
+#   - Automatically updates containers every 12 hours
+#   - Removes old images after updates to save space
+#   - To disable: comment out the watchtower service (lines 105-114)
+#   - To check update logs: docker logs watchtower
 #
 # ⚠️  IMPORTANT: Change all default passwords before deploying to production!
+# ⚠️  Watchtower will restart services automatically during updates
 
 version: '3.4' # For compatibility with older Docker versions
 
@@ -102,7 +110,59 @@ services:
 #    ports:
 #      - "3306:3306"  # Uncomment if you need to access MySQL from outside Docker
 
+  # 自动更新服务 - Watchtower
+  # Watchtower monitors running containers and automatically updates them when new images are available
+  watchtower:
+    image: nickfedor/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Required to control Docker daemon
+    environment:
+      - WATCHTOWER_CLEANUP=true  # Remove old images after updating to save disk space
+      - WATCHTOWER_POLL_INTERVAL=43200  # Check for updates every 12 hours (43200 seconds)
+      # Uncomment below for more configuration options:
+      # - WATCHTOWER_INCLUDE_RESTARTING=true  # Update containers that are restarting
+      # - WATCHTOWER_INCLUDE_STOPPED=false   # Don't update stopped containers
+      # - WATCHTOWER_ROLLING_RESTART=true     # Update containers one by one to minimize downtime
+      # - WATCHTOWER_NOTIFICATIONS=slack      # Enable notifications (requires webhook URL)
+    command: --interval 43200 --cleanup  # Command line options for interval and cleanup
+
 volumes:
   pg_data:
   open-webui-data: # 为 open-webui 新增的数据卷
 #  mysql_data:
+
+# =======================================================
+# Production Deployment & Security Notes
+# =======================================================
+#
+# 1. SECURITY:
+#    - Change ALL default passwords before production deployment
+#    - Consider using Docker secrets or .env files for sensitive data
+#    - Update POSTGRES_PASSWORD, MYSQL_ROOT_PASSWORD, and SQL_DSN
+#    - Review and adjust port bindings for your security requirements
+#
+# 2. WATCHTOWER IN PRODUCTION:
+#    - Test updates in staging before production deployment
+#    - Consider setting up a notification webhook for update alerts
+#    - For critical services, consider manual updates instead of automatic
+#    - Monitor watchtower logs: docker logs watchtower -f
+#
+# 3. MONITORING:
+#    - Monitor container health: docker-compose ps
+#    - Check logs: docker-compose logs [service-name]
+#    - Set up proper backup strategies for databases
+#
+# 4. BACKUP STRATEGIES:
+#    - Regularly backup pg_data and open-webui-data volumes
+#    - Export database dumps: docker exec postgres pg_dump -U root new-api > backup.sql
+#
+# 5. PERFORMANCE:
+#    - Adjust resource limits based on your usage patterns
+#    - Consider using docker-compose.yml with deploy.resources for production
+#
+# For more information about Watchtower:
+# https://watchtower.nickfedor.com
+# For New-API documentation:
+#   https://github.com/Calcium-Ion/new-api

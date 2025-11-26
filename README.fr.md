@@ -108,12 +108,36 @@
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# Modifier la configuration docker-compose.yml
+# Modifier la configuration docker-compose.yml (inclut New-API, Open-WebUI et Watchtower de mise à jour automatique)
 nano docker-compose.yml
 
-# Démarrer le service
+# Démarrer les services (inclut New-API, Open-WebUI et Watchtower de mise à jour automatique)
 docker-compose up -d
+
+# Surveiller les journaux de mise à jour automatique de Watchtower
+docker logs watchtower -f
 ```
+
+#### 🔧 Description des services
+
+La configuration Docker Compose inclut les services suivants :
+
+- **New-API** (Port 3000) : Service principal de passerelle API
+- **Open-WebUI** (Port 8000) : Service d'interface web
+- **PostgreSQL** : Service de base de données
+- **Redis** : Service de cache
+- **Watchtower** : Service de mise à jour automatique
+
+#### 🔄 Fonctionnalité de mise à jour automatique (Watchtower)
+
+Le projet intègre le service Watchtower, offrant les fonctionnalités suivantes :
+
+- **Surveillance automatique** : Vérifie les nouvelles versions d'images toutes les 12 heures
+- **Mises à jour automatiques** : Télécharge et redémarre les conteneurs lorsque de nouvelles versions sont trouvées
+- **Nettoyage des anciennes images** : Nettoie automatiquement les anciennes versions d'images après les mises à jour pour économiser de l'espace
+- **Gestion des services** : Met uniquement à jour les conteneurs en cours d'exécution, ignorant les conteneurs arrêtés
+
+Pour désactiver la mise à jour automatique, commentez la section du service watchtower dans `docker-compose.yml`.
 
 <details>
 <summary><strong>Utilisation des commandes Docker</strong></summary>
@@ -316,12 +340,31 @@ docker run --name new-api -d --restart always \
 git clone https://github.com/QuantumNous/new-api.git
 cd new-api
 
-# Modifier la configuration
+# Modifier la configuration (inclut New-API, Open-WebUI et les services Watchtower)
 nano docker-compose.yml
 
-# Démarrer le service
+# Démarrer les services (New-API + Open-WebUI + Redis + PostgreSQL + Watchtower)
 docker-compose up -d
+
+# Surveiller les journaux de mise à jour automatique
+docker logs watchtower -f
 ```
+
+**Description des services :**
+- **New-API** : S'exécute sur le port 3000, fournit l'interface de gestion API
+- **Open-WebUI** : S'exécute sur le port 8000, fournit l'interface de chat web
+- **Redis** : Service de cache
+- **PostgreSQL** : Service de base de données (MySQL optionnel)
+- **Watchtower** : Service de mise à jour automatique, vérifie et met à jour les images de conteneurs toutes les 12 heures
+
+**Adresses d'accès :**
+- Interface de gestion : `http://localhost:3000`
+- Interface de chat : `http://localhost:8000`
+
+**Gestion de Watchtower :**
+- Voir les journaux de mise à jour : `docker logs watchtower`
+- Déclencher manuellement la mise à jour : `docker-compose restart watchtower`
+- Désactiver la mise à jour automatique : Commenter le service watchtower dans `docker-compose.yml`
 
 </details>
 
